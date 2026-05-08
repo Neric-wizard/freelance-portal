@@ -6,16 +6,30 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Toaster, toast } from 'sonner'
 import CountUp from 'react-countup'
+import AddClientForm from './AddClientForm'
 
 export default function Dashboard() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showNotifications, setShowNotifications] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [clients, setClients] = useState([])
   const router = useRouter()
 
   const notificationRef = useRef(null)
   const userMenuRef = useRef(null)
+
+  // Fetch clients from Supabase - DEFINED FIRST
+  const fetchClients = async () => {
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (!error && data) {
+      setClients(data)
+    }
+  }
 
   // Click outside handler
   useEffect(() => {
@@ -38,6 +52,7 @@ export default function Dashboard() {
         router.push('/login')
       } else {
         setUser(user)
+        await fetchClients()
         setLoading(false)
         toast.success(`Welcome back, ${user.email?.split('@')[0]}`, {
           style: { background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }
@@ -71,7 +86,7 @@ export default function Dashboard() {
   const stats = [
     { 
       title: 'Total Clients', 
-      value: '0', 
+      value: clients.length.toString(),
       trend: '+0%', 
       trendUp: true,
       icon: 'users',
@@ -192,48 +207,47 @@ export default function Dashboard() {
                 )}
               </div>
 
-{/* User Menu */}
-<div className="relative" ref={userMenuRef}>
-  <button 
-    onClick={() => setShowUserMenu(!showUserMenu)}
-    className="flex items-center gap-2 p-1 rounded-xl hover:bg-white/10 transition"
-  >
-    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-      <span className="text-white text-sm font-bold">
-        {user?.email?.charAt(0).toUpperCase()}
-      </span>
-    </div>
-    <span className="hidden md:block text-sm text-gray-300">
-      {user?.email?.split('@')[0]}
-    </span>
-  </button>
-  {showUserMenu && (
-    // Dropdown opens to the left, not overlapping buttons
-    <div className="absolute left-0 mt-2 w-56 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-xl z-50"
-         style={{ left: 'auto', right: 0 }}
-    >
-      <div className="p-3 border-b border-white/10">
-        <p className="text-white text-sm font-medium">{user?.email}</p>
-        <p className="text-gray-400 text-xs">Freelance Plan</p>
-      </div>
-      <div className="p-2">
-        <button className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition">
-          Profile
-        </button>
-        <button className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition">
-          Settings
-        </button>
-        <hr className="my-1 border-white/10" />
-        <button 
-          onClick={handleLogout}
-          className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-white/10 rounded-lg transition"
-        >
-          Logout
-        </button>
-      </div>
-    </div>
-  )}
-</div>
+              {/* User Menu */}
+              <div className="relative" ref={userMenuRef}>
+                <button 
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-2 p-1 rounded-xl hover:bg-white/10 transition"
+                >
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">
+                      {user?.email?.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <span className="hidden md:block text-sm text-gray-300">
+                    {user?.email?.split('@')[0]}
+                  </span>
+                </button>
+                {showUserMenu && (
+                  <div className="absolute left-0 mt-2 w-56 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-xl z-50"
+                       style={{ left: 'auto', right: 0 }}
+                  >
+                    <div className="p-3 border-b border-white/10">
+                      <p className="text-white text-sm font-medium">{user?.email}</p>
+                      <p className="text-gray-400 text-xs">Freelance Plan</p>
+                    </div>
+                    <div className="p-2">
+                      <button className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition">
+                        Profile
+                      </button>
+                      <button className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition">
+                        Settings
+                      </button>
+                      <hr className="my-1 border-white/10" />
+                      <button 
+                        onClick={handleLogout}
+                        className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-white/10 rounded-lg transition"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -282,6 +296,9 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
+        {/* Add Client Form */}
+        <AddClientForm onClientAdded={fetchClients} />
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {stats.map((stat, index) => (
@@ -313,6 +330,36 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {/* Clients List Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10 mb-6"
+        >
+          <h3 className="text-lg font-semibold text-white mb-4">Your Clients</h3>
+          {clients.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-400">No clients yet</p>
+              <p className="text-gray-500 text-sm mt-1">Add your first client using the form above</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {clients.map((client) => (
+                <div key={client.id} className="flex justify-between items-center p-3 bg-white/5 rounded-xl border border-white/10">
+                  <div>
+                    <p className="text-white font-medium">{client.name}</p>
+                    <p className="text-gray-400 text-sm">{client.email}</p>
+                  </div>
+                  {client.company && (
+                    <span className="text-gray-500 text-sm">{client.company}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </motion.div>
+
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
@@ -320,7 +367,7 @@ export default function Dashboard() {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.4 }}
             className="bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 overflow-hidden"
           >
             <div className="p-6 border-b border-white/10">
@@ -349,7 +396,7 @@ export default function Dashboard() {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.5 }}
             className="bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 overflow-hidden"
           >
             <div className="p-6 border-b border-white/10">
@@ -373,7 +420,7 @@ export default function Dashboard() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.6 }}
           className="mt-8 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-2xl p-8 border border-white/10 text-center"
         >
           <h3 className="text-xl font-semibold text-white mb-2">Ready to grow your freelance business?</h3>
