@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Freelance Client Portal
 
-## Getting Started
+A full-stack platform for freelancers to manage clients and invoices.
 
-First, run the development server:
+**Live Demo:** [https://freelance-portal-v5w5.vercel.app](https://freelance-portal-v5w5.vercel.app)
+
+## Features
+
+### Client Management
+- Add clients with real-time validation
+- Live initials preview (John Doe → JD)
+- Client list with instant updates
+
+### Invoice Management
+- Create invoices with auto-numbering
+- Real-time duplicate check
+- Due date quick picks (+7, +14, +30 days)
+- Live invoice preview while typing
+
+### Authentication
+- Email/password login
+- Protected dashboard routes
+- RLS policies with (select auth.uid()) optimization
+
+## Tech Stack
+
+| Technology | Purpose |
+|------------|---------|
+| Next.js 15 | Framework |
+| TypeScript | Language |
+| Supabase | Database + Auth |
+| Tailwind CSS | Styling |
+| Framer Motion | Animations |
+| Vercel | Deployment |
+
+## Run Locally
 
 ```bash
+git clone https://github.com/Neric-wizard/freelance-portal.git
+cd freelance-portal
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
